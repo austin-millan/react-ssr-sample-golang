@@ -9,9 +9,16 @@ RUN cd src && env CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o goapp
 
 # Package stage
 FROM debian:9-slim
+WORKDIR /app
+RUN apt-get update
+RUN apt-get install -y curl
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
+RUN apt-get install -y nodejs
+RUN npm install -g yarn
+
 RUN apt-get update && apt-get install -y ca-certificates
 COPY --from=build-env /go/src/github.com/daves125125/react-ssr-sample-golang/src/goapp /app/goapp
-COPY ./react-build/ /app/react-build/
-WORKDIR /app
+COPY . ./
+RUN yarn install && yarn build
 EXPOSE 8080
 ENTRYPOINT [ "/app/goapp" ]
